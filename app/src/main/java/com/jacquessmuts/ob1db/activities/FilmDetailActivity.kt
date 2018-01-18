@@ -1,10 +1,12 @@
-package com.jacquessmuts.ob1db
+package com.jacquessmuts.ob1db.activities
 
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
+import com.jacquessmuts.ob1db.FilmDetailFragment
+import com.jacquessmuts.ob1db.R
 import kotlinx.android.synthetic.main.activity_film_detail.*
 
 /**

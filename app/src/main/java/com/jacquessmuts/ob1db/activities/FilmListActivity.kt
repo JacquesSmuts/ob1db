@@ -1,5 +1,6 @@
-package com.jacquessmuts.ob1db
+package com.jacquessmuts.ob1db.activities
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -9,6 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.jacquessmuts.ob1db.FilmDetailFragment
+import com.jacquessmuts.ob1db.R
 
 import com.jacquessmuts.ob1db.dummy.DummyContent
 import kotlinx.android.synthetic.main.activity_film_list.*
@@ -31,6 +34,14 @@ class FilmListActivity : AppCompatActivity() {
      * device.
      */
     private var mTwoPane: Boolean = false
+
+    companion object {
+        fun getIntent(context: Context) : Intent{
+            var intent = Intent(context, FilmListActivity::class.java)
+            //intent.putExtra("key", value)
+            return intent;
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
