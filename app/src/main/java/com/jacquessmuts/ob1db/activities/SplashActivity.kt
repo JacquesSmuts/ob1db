@@ -17,6 +17,7 @@ import java.io.InputStreamReader
 
 /**
  * Created by Jacques Smuts on 1/18/2018.
+ * Shows the splash screen while data loads. Should also do checks for existing data and internet connectivity
  */
 class SplashActivity : AppCompatActivity() {
 
@@ -24,7 +25,13 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        GetJsonWithOkHttpClient().execute();
+        //TODO: check internet, then database content, then open the list if you have data
+        this.GetJsonWithOkHttpClient().execute()
+    }
+
+    fun navigateToNextActivity(){
+        startActivity(FilmListActivity.getIntent(this@SplashActivity))
+        finish()
     }
 
     inner class GetJsonWithOkHttpClient() : AsyncTask<Unit, Unit, String>() {
@@ -39,7 +46,8 @@ class SplashActivity : AppCompatActivity() {
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
 
-            val gson = Gson()
+            //TODO: if (TextUtils.isEmpty(result)){}
+
             val jsonObject = JSONObject(result)
             val resultsArray = jsonObject.getString("results")
             val filmsType = object : TypeToken<List<Film>>() {}.type
@@ -61,16 +69,13 @@ class SplashActivity : AppCompatActivity() {
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_URL, film.url)
 //                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_VEHICLES, film.vehicles)
             }
-            val contentResolver = contentResolver;
+            val contentResolver = contentResolver
             contentResolver.bulkInsert(FilmContract.FilmEntry.CONTENT_URI, filmValuesArr)
 
-            //Log.e("Tag", result)
-
-            //mInnerTextView.text = result
-            startActivity(FilmListActivity.getIntent(this@SplashActivity));
+            navigateToNextActivity()
         }
 
-        fun readStream(inputStream: BufferedInputStream): String {
+        private fun readStream(inputStream: BufferedInputStream): String {
             val bufferedReader = BufferedReader(InputStreamReader(inputStream))
             val stringBuilder = StringBuilder()
             bufferedReader.forEachLine { stringBuilder.append(it) }
