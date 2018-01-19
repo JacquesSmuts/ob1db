@@ -61,11 +61,12 @@ object FilmContract {
             const val COLUMN_TITLE = "title"
             const val COLUMN_URL = "url"
             const val COLUMN_VEHICLES = "vehicles"
+
+
+            val getAll = FilmEntry.COLUMN_FILM_ID + " > 0";
+
         }
 
-        //        public static String getAll() {
-        //            return MovieEntry.COLUMN_IS_FAVORITE + " >= 1";
-        //        }
 
         //        public static String getById(int id){
         //            return MovieEntry.COLUMN_MOVIE_ID + " = " + id;

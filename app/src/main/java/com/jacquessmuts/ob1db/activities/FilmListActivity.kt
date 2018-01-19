@@ -2,18 +2,24 @@ package com.jacquessmuts.ob1db.activities
 
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.support.design.widget.Snackbar
+import android.support.v4.app.LoaderManager
+import android.support.v4.content.CursorLoader
+import android.support.v4.content.Loader
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.jacquessmuts.ob1db.FilmDetailFragment
 import com.jacquessmuts.ob1db.R
+import com.jacquessmuts.ob1db.data.FilmContract
 
 import com.jacquessmuts.ob1db.dummy.DummyContent
+import com.jacquessmuts.ob1db.models.Film
 import kotlinx.android.synthetic.main.activity_film_list.*
 import kotlinx.android.synthetic.main.film_list_content.view.*
 
@@ -27,15 +33,28 @@ import kotlinx.android.synthetic.main.film_list.*
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-class FilmListActivity : AppCompatActivity() {
+class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     private var mTwoPane: Boolean = false
+    private var films: MutableList<Film> = mutableListOf()
 
     companion object {
+        val ID_FILM_LIST_LOADER = 94
+
+        /*
+    * The columns of data that we are interested in displaying within the list
+    */
+        val MAIN_MOVIES_PROJECTION = arrayOf<String>(
+                FilmContract.FilmEntry.COLUMN_FILM_ID,
+                FilmContract.FilmEntry.COLUMN_TITLE,
+                FilmContract.FilmEntry.COLUMN_RELEASE_DATE,
+                FilmContract.FilmEntry.COLUMN_DIRECTOR,
+                FilmContract.FilmEntry.COLUMN_PRODUCER)
+
         fun getIntent(context: Context) : Intent{
             var intent = Intent(context, FilmListActivity::class.java)
             //intent.putExtra("key", value)
@@ -63,15 +82,16 @@ class FilmListActivity : AppCompatActivity() {
             mTwoPane = true
         }
 
-        setupRecyclerView(film_list)
+        setupRecyclerView()
+        supportLoaderManager.initLoader(ID_FILM_LIST_LOADER, null, this)
     }
 
-    private fun setupRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.adapter = SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, mTwoPane)
+    private fun setupRecyclerView() {
+        film_list.adapter = SimpleItemRecyclerViewAdapter(this, films, mTwoPane)
     }
 
     class SimpleItemRecyclerViewAdapter(private val mParentActivity: FilmListActivity,
-                                        private val mValues: List<DummyContent.DummyItem>,
+                                        private val mValues: List<Film>,
                                         private val mTwoPane: Boolean) :
             RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
 
@@ -107,8 +127,8 @@ class FilmListActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = mValues[position]
-            holder.mIdView.text = item.id
-            holder.mContentView.text = item.content
+            holder.mIdView.text = item.title
+            holder.mContentView.text = item.director
 
             with(holder.itemView) {
                 tag = item
@@ -124,5 +144,55 @@ class FilmListActivity : AppCompatActivity() {
             val mIdView: TextView = mView.id_text
             val mContentView: TextView = mView.content
         }
+    }
+
+    /**
+     * DB FUNCTIONS
+     */
+    override fun onCreateLoader(loaderId: Int, args: Bundle?): Loader<Cursor>? {
+        when (loaderId) {
+
+             ID_FILM_LIST_LOADER -> {
+                val queryUri = FilmContract.FilmEntry.CONTENT_URI
+
+                val selection = FilmContract.FilmEntry.getAll
+
+                return CursorLoader(
+                        this@FilmListActivity,
+                        queryUri,
+                        MAIN_MOVIES_PROJECTION,
+                        selection,
+                        null,
+                        null
+                )
+            }
+
+            else -> throw RuntimeException("Loader Not Implemented: " + loaderId)
+        }
+    }
+
+    override fun onLoadFinished(loader: Loader<Cursor>?, data: Cursor?) {
+        if (data != null) {
+            films = mutableListOf()
+            try {
+                while (data.moveToNext()) {
+                    var film = Film()
+                    film.episodeId = data.getLong(data!!.getColumnIndex(FilmContract.FilmEntry.COLUMN_FILM_ID))
+                    film.title = data.getString(data!!.getColumnIndex(FilmContract.FilmEntry.COLUMN_TITLE))
+                    film.releaseDate = data.getString(data!!.getColumnIndex(FilmContract.FilmEntry.COLUMN_RELEASE_DATE))
+                    film.director = data.getString(data!!.getColumnIndex(FilmContract.FilmEntry.COLUMN_DIRECTOR))
+                    film.producer = data.getString(data!!.getColumnIndex(FilmContract.FilmEntry.COLUMN_PRODUCER))
+                    films.add(film)
+                }
+            } finally {
+                data.close()
+            }
+
+            setupRecyclerView()
+        }
+    }
+
+    override fun onLoaderReset(p0: Loader<Cursor>?) {
+
     }
 }
