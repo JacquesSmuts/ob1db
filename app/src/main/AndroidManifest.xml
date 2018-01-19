@@ -36,6 +36,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jacquessmuts.ob1db.activities.FilmListActivity" />
         </activity>
+
+        <provider
+            android:name=".data.FilmProvider"
+            android:authorities="@string/content_authority"
+            android:exported="false"/>
     </application>
 
 </manifest>
