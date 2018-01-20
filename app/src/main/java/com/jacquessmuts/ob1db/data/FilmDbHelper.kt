@@ -23,7 +23,7 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
          * If you change the database schema, you must increment the database version or the onUpgrade
          * method will not be called.
          */
-        private val DATABASE_VERSION = 1
+        private val DATABASE_VERSION = 2
 
         /*
         * The columns of data that we are interested in displaying within the list
@@ -71,12 +71,10 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                         FilmContract.FilmEntry.COLUMN_STARSHIPS + " TEXT, " +
                         FilmContract.FilmEntry.COLUMN_TITLE + " TEXT, " +
                         FilmContract.FilmEntry.COLUMN_URL + " TEXT, " +
-                        FilmContract.FilmEntry.COLUMN_STARSHIPS   + " TEXT, "  +
                         FilmContract.FilmEntry.COLUMN_VEHICLES + " TEXT);"
 
 
         sqLiteDatabase.execSQL(SQL_CREATE_FILMS_TABLE)
-
     }
 
     /**

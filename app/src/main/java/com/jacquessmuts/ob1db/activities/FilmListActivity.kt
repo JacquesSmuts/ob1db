@@ -9,6 +9,8 @@ import android.support.v4.app.LoaderManager
 import android.support.v4.content.CursorLoader
 import android.support.v4.content.Loader
 import android.support.v7.widget.LinearLayoutManager
+import android.util.AttributeSet
+import android.view.View
 import com.jacquessmuts.ob1db.R
 import com.jacquessmuts.ob1db.adapters.FilmListRecyclerViewAdapter
 import com.jacquessmuts.ob1db.data.FilmContract
@@ -67,7 +69,6 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
 
         recycler_film_list.layoutManager = LinearLayoutManager(this)
         supportLoaderManager.initLoader(ID_FILM_LIST_LOADER, null, this)
-
     }
 
     /**
