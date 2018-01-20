@@ -44,8 +44,8 @@ class FilmDetailActivity : AppCompatActivity() {
             // using a fragment transaction.
             val fragment = FilmDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putString(FilmDetailFragment.ARG_ITEM_ID,
-                            intent.getStringExtra(FilmDetailFragment.ARG_ITEM_ID))
+                    putLong(FilmDetailFragment.EXTRA_FILM_ID,
+                            intent.getLongExtra(FilmDetailFragment.EXTRA_FILM_ID, 0))
                 }
             }
 

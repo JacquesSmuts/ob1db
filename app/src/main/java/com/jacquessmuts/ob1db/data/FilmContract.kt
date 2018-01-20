@@ -17,7 +17,7 @@ object FilmContract {
      * The "Content authority" is a name for the entire content provider.
      */
     const val CONTENT_AUTHORITY = "com.jacquessmuts.starwarsdb"
-    val BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY)
+    val BASE_CONTENT_URI: Uri = Uri.parse("content://" + CONTENT_AUTHORITY)
 
     /*
      * Possible paths that can be appended to BASE_CONTENT_URI to form valid URI's that the app
@@ -40,7 +40,7 @@ object FilmContract {
         companion object {
 
             /* The base CONTENT_URI used to query the Weather table from the content provider */
-            val CONTENT_URI = BASE_CONTENT_URI.buildUpon()
+            val CONTENT_URI: Uri = BASE_CONTENT_URI.buildUpon()
                     .appendPath(PATH_FILM)
                     .build()
 
@@ -63,13 +63,12 @@ object FilmContract {
             const val COLUMN_VEHICLES = "vehicles"
 
 
-            val getAll = FilmEntry.COLUMN_FILM_ID + " > 0";
+            const val getAll = FilmEntry.COLUMN_FILM_ID + " > 0"
+
+            fun getById(id: Long) : String {
+                return FilmEntry.COLUMN_FILM_ID + " = " + id
+            }
 
         }
-
-
-        //        public static String getById(int id){
-        //            return MovieEntry.COLUMN_MOVIE_ID + " = " + id;
-        //        }
     }
 }

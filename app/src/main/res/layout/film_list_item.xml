@@ -23,6 +23,7 @@
         <ImageView
             android:id="@+id/image_poster"
             android:src="@drawable/star_wars_logo"
+            android:contentDescription="@string/content_description_image_poster"
             android:layout_width="160dp"
             android:layout_height="wrap_content" />
 

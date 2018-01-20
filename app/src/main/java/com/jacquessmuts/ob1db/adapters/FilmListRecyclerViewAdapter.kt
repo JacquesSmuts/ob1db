@@ -11,7 +11,6 @@ import com.jacquessmuts.ob1db.FilmDetailFragment
 import com.jacquessmuts.ob1db.R
 import com.jacquessmuts.ob1db.activities.FilmDetailActivity
 import com.jacquessmuts.ob1db.activities.FilmListActivity
-import com.jacquessmuts.ob1db.dummy.DummyContent
 import com.jacquessmuts.ob1db.models.Film
 import kotlinx.android.synthetic.main.film_list_item.view.*
 
@@ -31,7 +30,7 @@ class FilmListRecyclerViewAdapter(private val mParentActivity: FilmListActivity,
             if (mTwoPane) {
                 val fragment = FilmDetailFragment().apply {
                     arguments = Bundle().apply {
-                        //putString(FilmDetailFragment.ARG_ITEM_ID, item.id)
+                        putLong(FilmDetailFragment.EXTRA_FILM_ID, item.episodeId!!)
                     }
                 }
                 mParentActivity.supportFragmentManager
@@ -40,7 +39,7 @@ class FilmListRecyclerViewAdapter(private val mParentActivity: FilmListActivity,
                         .commit()
             } else {
                 val intent = Intent(v.context, FilmDetailActivity::class.java).apply {
-                    //putExtra(FilmDetailFragment.ARG_ITEM_ID, item.id)
+                    putExtra(FilmDetailFragment.EXTRA_FILM_ID, item.episodeId)
                 }
                 v.context.startActivity(intent)
             }

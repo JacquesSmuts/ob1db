@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager
 import com.jacquessmuts.ob1db.R
 import com.jacquessmuts.ob1db.adapters.FilmListRecyclerViewAdapter
 import com.jacquessmuts.ob1db.data.FilmContract
+import com.jacquessmuts.ob1db.data.FilmDbHelper
 
 import com.jacquessmuts.ob1db.models.Film
 import kotlinx.android.synthetic.main.activity_film_list.*
@@ -37,17 +38,6 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
 
     companion object {
         const val ID_FILM_LIST_LOADER = 94 //we are located at docking bay 94
-
-        /*
-        * The columns of data that we are interested in displaying within the list
-        */
-        val MAIN_MOVIES_PROJECTION: Array<String>
-            get() = arrayOf(
-                    FilmContract.FilmEntry.COLUMN_FILM_ID,
-                    FilmContract.FilmEntry.COLUMN_TITLE,
-                    FilmContract.FilmEntry.COLUMN_RELEASE_DATE,
-                    FilmContract.FilmEntry.COLUMN_DIRECTOR,
-                    FilmContract.FilmEntry.COLUMN_PRODUCER)
 
         /**
          * Get the intent for this class and add the appropriate values and references
@@ -75,7 +65,7 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
             mTwoPane = true
         }
 
-        recycler_film_list.layoutManager = LinearLayoutManager(this);
+        recycler_film_list.layoutManager = LinearLayoutManager(this)
         supportLoaderManager.initLoader(ID_FILM_LIST_LOADER, null, this)
 
     }
@@ -101,7 +91,7 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
                 return CursorLoader(
                         this@FilmListActivity,
                         queryUri,
-                        MAIN_MOVIES_PROJECTION,
+                        FilmDbHelper.FILMS_LIST_PROJECTION,
                         selection,
                         null,
                         null

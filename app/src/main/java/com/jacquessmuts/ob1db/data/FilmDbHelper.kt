@@ -14,6 +14,38 @@ import android.database.sqlite.SQLiteOpenHelper
  */
 class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
+
+    companion object {
+
+        val DATABASE_NAME = "swapifilm.db"
+
+        /*
+         * If you change the database schema, you must increment the database version or the onUpgrade
+         * method will not be called.
+         */
+        private val DATABASE_VERSION = 1
+
+        /*
+        * The columns of data that we are interested in displaying within the list
+        */
+        val FILMS_LIST_PROJECTION: Array<String>
+            get() = arrayOf(
+                    FilmContract.FilmEntry.COLUMN_FILM_ID,
+                    FilmContract.FilmEntry.COLUMN_TITLE,
+                    FilmContract.FilmEntry.COLUMN_RELEASE_DATE,
+                    FilmContract.FilmEntry.COLUMN_DIRECTOR,
+                    FilmContract.FilmEntry.COLUMN_PRODUCER)
+
+
+        val FILM_DETAILS_PROJECTION: Array<String>
+            get() = arrayOf(
+                    FilmContract.FilmEntry.COLUMN_FILM_ID,
+                    FilmContract.FilmEntry.COLUMN_TITLE,
+                    FilmContract.FilmEntry.COLUMN_RELEASE_DATE,
+                    FilmContract.FilmEntry.COLUMN_CHARACTERS,
+                    FilmContract.FilmEntry.COLUMN_OPENING_CRAWL)
+    }
+
     /**
      * @param sqLiteDatabase The database.
      */
@@ -62,20 +94,5 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
     override fun onUpgrade(sqLiteDatabase: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + FilmContract.FilmEntry.TABLE_NAME)
         onCreate(sqLiteDatabase)
-    }
-
-    companion object {
-
-        /*
-     * This is the name of our database. Database names should be descriptive and end with the
-     * .db extension.
-     */
-        val DATABASE_NAME = "swapifilm.db"
-
-        /*
-     * If you change the database schema, you must increment the database version or the onUpgrade
-     * method will not be called.
-     */
-        private val DATABASE_VERSION = 1
     }
 }
