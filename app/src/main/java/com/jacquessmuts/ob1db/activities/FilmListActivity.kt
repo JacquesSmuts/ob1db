@@ -9,12 +9,10 @@ import android.support.v4.app.LoaderManager
 import android.support.v4.content.CursorLoader
 import android.support.v4.content.Loader
 import android.support.v7.widget.LinearLayoutManager
-import android.util.AttributeSet
-import android.view.View
 import com.jacquessmuts.ob1db.R
 import com.jacquessmuts.ob1db.adapters.FilmListRecyclerViewAdapter
 import com.jacquessmuts.ob1db.data.FilmContract
-import com.jacquessmuts.ob1db.data.FilmDbHelper
+import com.jacquessmuts.ob1db.data.DbHelper
 
 import com.jacquessmuts.ob1db.models.Film
 import kotlinx.android.synthetic.main.activity_film_list.*
@@ -92,7 +90,7 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
                 return CursorLoader(
                         this@FilmListActivity,
                         queryUri,
-                        FilmDbHelper.FILMS_LIST_PROJECTION,
+                        DbHelper.FILMS_LIST_PROJECTION,
                         selection,
                         null,
                         null

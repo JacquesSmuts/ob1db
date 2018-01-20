@@ -11,17 +11,12 @@ import android.view.View
 import android.view.ViewGroup
 import com.jacquessmuts.ob1db.activities.FilmListActivity
 import com.jacquessmuts.ob1db.data.FilmContract
-import com.jacquessmuts.ob1db.data.FilmDbHelper
+import com.jacquessmuts.ob1db.data.DbHelper
 import com.jacquessmuts.ob1db.models.Film
-import icepick.Icepick
 import icepick.State
 import kotlinx.android.synthetic.main.activity_film_detail.*
 import kotlinx.android.synthetic.main.film_detail.*
-import android.provider.MediaStore.Video
 import android.text.TextUtils
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-
 
 
 /**
@@ -98,7 +93,7 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
                 return CursorLoader(
                         this@FilmDetailFragment.context,
                         queryUri,
-                        FilmDbHelper.FILM_DETAILS_PROJECTION,
+                        DbHelper.FILM_DETAILS_PROJECTION,
                         selection,
                         null,
                         null

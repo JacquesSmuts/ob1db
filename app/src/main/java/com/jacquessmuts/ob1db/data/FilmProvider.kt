@@ -24,7 +24,7 @@ import android.net.Uri
  * However, here, they are not implemented for the sake of brevity and simplicity.
  */
 class FilmProvider : ContentProvider() {
-    private var mOpenHelper: FilmDbHelper? = null
+    private var mOpenHelper: DbHelper? = null
     //TODO : Make this Content Provider work with data and remove Sunshine references and unneccesary comments
     /**
      * In onCreate, we initialize our content provider on startup. This method is called for all
@@ -47,7 +47,7 @@ class FilmProvider : ContentProvider() {
          * lengthy operations will cause lag in your app. Since MovieDbHelper's constructor is
          * very lightweight, we are safe to perform that initialization here.
          */
-        mOpenHelper = FilmDbHelper(context)
+        mOpenHelper = DbHelper(context)
         return true
     }
 

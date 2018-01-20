@@ -18,24 +18,9 @@ object FilmContract {
      */
     const val CONTENT_AUTHORITY = "com.jacquessmuts.starwarsdb"
     val BASE_CONTENT_URI: Uri = Uri.parse("content://" + CONTENT_AUTHORITY)
-
-    /*
-     * Possible paths that can be appended to BASE_CONTENT_URI to form valid URI's that the app
-     * can handle. For instance,
-     *
-     *     content://com.example.android.sunshine/weather/
-     *     [           BASE_CONTENT_URI         ][ PATH_FILM ]
-     *
-     * is a valid path for looking at weather data.
-     *
-     *      content://com.example.android.sunshine/givemeroot/
-     *
-     * will fail, as the ContentProvider hasn't been given any information on what to do with
-     * "givemeroot". At least, let's hope not. Don't be that dev, reader. Don't be that dev.
-     */
     const val PATH_FILM = "film"
 
-    /* Inner class that defines the table contents of the weather table */
+    /* Inner class that defines the table contents of the Film table */
     class FilmEntry : BaseColumns {
         companion object {
 

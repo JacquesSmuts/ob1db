@@ -13,6 +13,7 @@ class NetworkClient {
     companion object {
         const val BASE_API = "https://swapi.co/api/";
         const val GET_ALL_FILMS = BASE_API+ "films";
+        const val GET_ALL_CHARACTERS = BASE_API+ "people";
     }
 
     fun get(url: String): InputStream {

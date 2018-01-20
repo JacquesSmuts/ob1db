@@ -3,14 +3,21 @@ package com.jacquessmuts.ob1db.activities
 import android.content.ContentValues
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import android.text.TextUtils
+import android.util.Log
+import android.view.View
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jacquessmuts.ob1db.R
 import com.jacquessmuts.ob1db.Utils
 import com.jacquessmuts.ob1db.data.FilmContract
+import com.jacquessmuts.ob1db.data.PeopleContract
+import com.jacquessmuts.ob1db.models.Person
 import com.jacquessmuts.ob1db.models.Film
 import com.jacquessmuts.ob1db.network.NetworkClient
+import kotlinx.android.synthetic.main.activity_splash.*
 import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.BufferedReader
@@ -22,22 +29,63 @@ import java.io.InputStreamReader
  */
 class SplashActivity : AppCompatActivity() {
 
+    private var mIsCurrentlyOpen = false //Determines whether the activity is running
+    var mNextUrl = ""
+    val TAG = "SplashActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mIsCurrentlyOpen = true
         setContentView(R.layout.activity_splash)
 
-        //TODO: check internet, then database content, then open the list if you have data
-        this.GetJsonWithOkHttpClient().execute()
+        if (!Utils.isNetworkConnected(this)) {
+            //There's no internet. Check the database?
 
-        //TODO: if api call takes longer than 1500ms, show a progress loader
+//            if (databaseHasBeenPopulated()){
+//                navigateToNextActivity()
+//            } else {
+//            showApologyPopup() //TODO popup
+//          }
+            finish()
+        }
+
+        this.GetFilmsWithOkHttp().execute()
+
+        //show the progress bar if it takes long
+        Handler().postDelayed({
+            if (mIsCurrentlyOpen){
+                progress_bar.visibility = View.VISIBLE
+                progress_bar.animate().scaleY(5.0f).scaleX(5.0f).setDuration(10000)
+            } else {
+                finish() //because the user closed the app before things finished
+            }
+        }, 2000)
     }
 
-    fun navigateToNextActivity(){
-        startActivity(FilmListActivity.getIntent(this@SplashActivity))
+    override fun onPause() {
+        mIsCurrentlyOpen = false
+        super.onPause()
+    }
+
+    //Loop through all the pages to get the characters. If there are too many characters,
+    //just get them individually as needed and save then. For now, the list is short and this works
+    fun getNextPage(){
+        Log.d(TAG, "Getting next page")
+        if (TextUtils.isEmpty(mNextUrl) || mNextUrl.equals("null")){
+            navigateToNextActivity()
+        } else {
+            GetPeopleWithAsyncTask(mNextUrl).execute()
+        }
+    }
+    private fun navigateToNextActivity(){
+        //If user closes splash screen, the app won't re-open
+        if (mIsCurrentlyOpen) {
+            startActivity(FilmListActivity.getIntent(this@SplashActivity))
+        }
         finish()
     }
 
-    inner class GetJsonWithOkHttpClient() : AsyncTask<Unit, Unit, String>() {
+    inner class GetFilmsWithOkHttp() : AsyncTask<Unit, Unit, String>() {
 
         override fun doInBackground(vararg params: Unit?): String? {
             val networkClient = NetworkClient()
@@ -69,14 +117,68 @@ class SplashActivity : AppCompatActivity() {
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_PRODUCER, film.producer)
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_RELEASE_DATE, film.releaseDate)
 //                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_STARSHIPS, film.starships)
+//                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_VEHICLES, film.vehicles)
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_TITLE, film.title)
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_URL, film.url)
-//                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_VEHICLES, film.vehicles)
             }
             val contentResolver = contentResolver
             contentResolver.bulkInsert(FilmContract.FilmEntry.CONTENT_URI, filmValuesArr)
 
-            navigateToNextActivity()
+            //After getting the films, get the characters
+            this@SplashActivity.GetPeopleWithAsyncTask(mNextUrl).execute()
+        }
+
+        private fun readStream(inputStream: BufferedInputStream): String {
+            val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+            val stringBuilder = StringBuilder()
+            bufferedReader.forEachLine { stringBuilder.append(it) }
+            return stringBuilder.toString()
+        }
+    }
+
+    inner class GetPeopleWithAsyncTask(url : String) : AsyncTask<Unit, Unit, String>() {
+
+        private val streamUrl = url
+
+        override fun doInBackground(vararg params: Unit?): String? {
+            val networkClient = NetworkClient()
+            var url = NetworkClient.GET_ALL_CHARACTERS
+            if (!TextUtils.isEmpty(streamUrl)){
+                url = streamUrl
+            }
+            Log.d("SplashActivity", "Getting People:" + url)
+            val stream = BufferedInputStream(
+                    networkClient.get(url))
+            return readStream(stream)
+        }
+
+        override fun onPostExecute(result: String?) {
+            super.onPostExecute(result)
+
+            //TODO: if (TextUtils.isEmpty(result)){}
+
+            val jsonObject = JSONObject(result)
+
+            mNextUrl = ""
+            if (jsonObject.has("next")){
+                mNextUrl = jsonObject.getString("next")
+            }
+
+            val resultsArray = jsonObject.getString("results")
+            val peopleType = object : TypeToken<List<Person>>() {}.type
+            val people = Gson().fromJson<List<Person>>(resultsArray, peopleType)
+
+            val peopleValuesArr = arrayOfNulls<ContentValues>(people.size)
+            for ((i, person) in people.withIndex()){
+                peopleValuesArr[i] = ContentValues()
+                peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_NAME, person.name)
+                peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_URL, person.url)
+                peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_HEIGHT, person.height)
+            }
+            val contentResolver = contentResolver
+            contentResolver.bulkInsert(PeopleContract.PersonEntry.CONTENT_URI, peopleValuesArr)
+
+            getNextPage()
         }
 
         private fun readStream(inputStream: BufferedInputStream): String {

@@ -10,9 +10,9 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /**
- * Manages a local database for film data.
+ * Manages a local database for star wars data.
  */
-class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
 
     companion object {
@@ -23,7 +23,7 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
          * If you change the database schema, you must increment the database version or the onUpgrade
          * method will not be called.
          */
-        private val DATABASE_VERSION = 2
+        private val DATABASE_VERSION = 3
 
         /*
         * The columns of data that we are interested in displaying within the list
@@ -44,6 +44,11 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                     FilmContract.FilmEntry.COLUMN_RELEASE_DATE,
                     FilmContract.FilmEntry.COLUMN_CHARACTERS,
                     FilmContract.FilmEntry.COLUMN_OPENING_CRAWL)
+
+        val PEOPLE_PROJECTION: Array<String>
+            get() = arrayOf(
+                    PeopleContract.PersonEntry.COLUMN_NAME,
+                    PeopleContract.PersonEntry.COLUMN_URL)
     }
 
     /**
@@ -73,8 +78,14 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                         FilmContract.FilmEntry.COLUMN_URL + " TEXT, " +
                         FilmContract.FilmEntry.COLUMN_VEHICLES + " TEXT);"
 
+        val SQL_CREATE_PEOPLE_TABLE =
+                "CREATE TABLE " + PeopleContract.PersonEntry.TABLE_NAME + " (" +
+                        PeopleContract.PersonEntry.COLUMN_URL + " TEXT PRIMARY KEY NOT NULL ON CONFLICT REPLACE, " +
+                        PeopleContract.PersonEntry.COLUMN_NAME + " TEXT, " +
+                        PeopleContract.PersonEntry.COLUMN_HEIGHT + " TEXT);"
 
         sqLiteDatabase.execSQL(SQL_CREATE_FILMS_TABLE)
+        sqLiteDatabase.execSQL(SQL_CREATE_PEOPLE_TABLE)
     }
 
     /**
@@ -91,6 +102,7 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
      */
     override fun onUpgrade(sqLiteDatabase: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + FilmContract.FilmEntry.TABLE_NAME)
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PeopleContract.PersonEntry.TABLE_NAME)
         onCreate(sqLiteDatabase)
     }
 }
