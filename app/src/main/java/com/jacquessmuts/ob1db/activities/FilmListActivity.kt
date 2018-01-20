@@ -38,6 +38,7 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
 
     companion object {
         const val ID_FILM_LIST_LOADER = 94 //we are located at docking bay 94
+        const val ID_PEOPLE_LIST_LOADER = 327
 
         /**
          * Get the intent for this class and add the appropriate values and references

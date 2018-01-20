@@ -49,13 +49,13 @@ class SplashActivity : AppCompatActivity() {
             finish()
         }
 
-        this.GetFilmsWithOkHttp().execute()
+        this.GetFilmsWithAsyncTask().execute()
 
         //show the progress bar if it takes long
         Handler().postDelayed({
             if (mIsCurrentlyOpen){
                 progress_bar.visibility = View.VISIBLE
-                progress_bar.animate().scaleY(5.0f).scaleX(5.0f).setDuration(10000)
+                progress_bar.animate().scaleY(5.0f).scaleX(5.0f).setDuration(12000)
             } else {
                 finish() //because the user closed the app before things finished
             }
@@ -85,7 +85,18 @@ class SplashActivity : AppCompatActivity() {
         finish()
     }
 
-    inner class GetFilmsWithOkHttp() : AsyncTask<Unit, Unit, String>() {
+//    private fun getFilmsWithOkHttp(){
+//        val client = OkHttpClient()
+//        val request = Request.Builder().url(NetworkClient.GET_ALL_FILMS).build()
+//        val Response = client.newCall(request).execute()
+//
+//        return response.body().string();
+//
+//    }
+
+
+    //TODO: use OkHttp. I mean really. Gosh gee willikers.
+    inner class GetFilmsWithAsyncTask() : AsyncTask<Unit, Unit, String>() {
 
         override fun doInBackground(vararg params: Unit?): String? {
             val networkClient = NetworkClient()

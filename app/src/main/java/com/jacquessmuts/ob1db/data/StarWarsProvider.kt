@@ -9,6 +9,7 @@ import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
+import android.text.TextUtils
 
 /**
  * Created by Jacques Smuts on 1/18/2018.
@@ -23,7 +24,7 @@ import android.net.Uri
  * perform single inserts, updates, and the ability to get the type of the data from a URI.
  * However, here, they are not implemented for the sake of brevity and simplicity.
  */
-class FilmProvider : ContentProvider() {
+class StarWarsProvider : ContentProvider() {
     private var mOpenHelper: DbHelper? = null
     //TODO : Make this Content Provider work with data and remove Sunshine references and unneccesary comments
     /**
@@ -62,33 +63,37 @@ class FilmProvider : ContentProvider() {
      */
     override fun bulkInsert(uri: Uri, values: Array<ContentValues>): Int {
         val db = mOpenHelper!!.writableDatabase
-
+        var tableName = ""
         when (sUriMatcher.match(uri)) {
-
             CODE_FILM -> {
-                db.beginTransaction()
-                var rowsInserted = 0
-                try {
-                    for (value in values) {
-                        val _id = db.insert(FilmContract.FilmEntry.TABLE_NAME, null, value)
-                        if (!_id.equals(-1)) {
-                            rowsInserted++
-                        }
+                tableName= FilmContract.FilmEntry.TABLE_NAME
+            }
+            CODE_PERSON -> {
+                tableName = PeopleContract.PersonEntry.TABLE_NAME
+            }
+        }
+        if (!TextUtils.isEmpty(tableName)) {
+            db.beginTransaction()
+            var rowsInserted = 0
+            try {
+                for (value in values) {
+                    val _id = db.insert(tableName, null, value)
+                    if (!_id.equals(-1)) {
+                        rowsInserted++
                     }
-                    db.setTransactionSuccessful()
-                } finally {
-                    db.endTransaction()
                 }
-
-                if (rowsInserted > 0) {
-                    context!!.contentResolver.notifyChange(uri, null)
-                }
-
-                return rowsInserted
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
             }
 
-            else -> return super.bulkInsert(uri, values)
+            if (rowsInserted > 0) {
+                context!!.contentResolver.notifyChange(uri, null)
+            }
+
+            return rowsInserted
         }
+        return super.bulkInsert(uri, values)
     }
 
     /**
@@ -195,6 +200,14 @@ class FilmProvider : ContentProvider() {
                         selectionArgs, null, null,
                         sortOrder)
             }
+            CODE_PERSON -> {
+                cursor = mOpenHelper!!.readableDatabase.query(
+                        PeopleContract.PersonEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs, null, null,
+                        sortOrder)
+            }
 
             else -> throw UnsupportedOperationException("Unknown uri: " + uri)
         }
@@ -246,7 +259,7 @@ class FilmProvider : ContentProvider() {
 
     /**
      * In Sunshine, we aren't going to do anything with this method. However, we are required to
-     * override it as FilmProvider extends ContentProvider and getType is an abstract method in
+     * override it as StarWarsProvider extends ContentProvider and getType is an abstract method in
      * ContentProvider. Normally, this method handles requests for the MIME type of the data at the
      * given URI. For example, if your app provided images at a particular URI, then you would
      * return an image URI from this method.
@@ -260,9 +273,9 @@ class FilmProvider : ContentProvider() {
 
     /**
      * In Sunshine, we aren't going to do anything with this method. However, we are required to
-     * override it as FilmProvider extends ContentProvider and insert is an abstract method in
+     * override it as StarWarsProvider extends ContentProvider and insert is an abstract method in
      * ContentProvider. Rather than the single insert method, we are only going to implement
-     * [FilmProvider.bulkInsert].
+     * [StarWarsProvider.bulkInsert].
      *
      * @param uri    The URI of the insertion request. This must not be null.
      * @param values A set of column_name/value pairs to add to the database.
@@ -271,28 +284,34 @@ class FilmProvider : ContentProvider() {
      */
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
         val db = mOpenHelper!!.writableDatabase
-
+        var tableName = ""
         var id: Long = 0
         when (sUriMatcher.match(uri)) {
             CODE_FILM -> {
-                db.beginTransaction()
-                try {
-                    id = db.insertWithOnConflict(
-                            FilmContract.FilmEntry.TABLE_NAME, null,
-                            values,
-                            SQLiteDatabase.CONFLICT_REPLACE)
-
-                    db.setTransactionSuccessful()
-                } finally {
-                    db.endTransaction()
-                }
-
-                if (id > 0) {
-                    context!!.contentResolver.notifyChange(uri, null)
-                }
-
-                return getUriForId(id, uri)
+                tableName= FilmContract.FilmEntry.TABLE_NAME
             }
+            CODE_PERSON -> {
+                tableName = PeopleContract.PersonEntry.TABLE_NAME
+            }
+        }
+        if (!TextUtils.isEmpty(tableName)){
+            db.beginTransaction()
+            try {
+                id = db.insertWithOnConflict(
+                        tableName, null,
+                        values,
+                        SQLiteDatabase.CONFLICT_REPLACE)
+
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
+            }
+
+            if (id > 0) {
+                context!!.contentResolver.notifyChange(uri, null)
+            }
+
+            return getUriForId(id, uri)
         }
         return null
     }
@@ -330,6 +349,7 @@ class FilmProvider : ContentProvider() {
      * ourselves, such as using regular expressions.
      */
         val CODE_FILM = 100
+        val CODE_PERSON = 101
         //    public static final int CODE_FILM_WITH_DATE = 101;
 
         private val sUriMatcher = buildUriMatcher()
@@ -347,7 +367,8 @@ class FilmProvider : ContentProvider() {
          * return for the root URI. It's common to use NO_MATCH as the code for this case.
          */
             val matcher = UriMatcher(UriMatcher.NO_MATCH)
-            val authority = FilmContract.CONTENT_AUTHORITY
+            val authorityFilm = FilmContract.CONTENT_AUTHORITY
+            val authorityPerson = PeopleContract.CONTENT_AUTHORITY
 
             /*
          * For each type of URI you want to add, create a corresponding code. Preferably, these are
@@ -356,7 +377,8 @@ class FilmProvider : ContentProvider() {
          */
 
             /* This URI is content://com.jacquessmuts.starwarsdb/film/ */
-            matcher.addURI(authority, FilmContract.PATH_FILM, CODE_FILM)
+            matcher.addURI(authorityFilm, FilmContract.PATH_FILM, CODE_FILM)
+            matcher.addURI(authorityPerson, PeopleContract.PATH_PEOPLE, CODE_PERSON)
 
             //matcher.addURI(authority, MovieContract.PATH_FILM + "/#", CODE_FILM_WITH_DATE);
 
