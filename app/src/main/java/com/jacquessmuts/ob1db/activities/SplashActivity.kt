@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jacquessmuts.ob1db.R
+import com.jacquessmuts.ob1db.Utils
 import com.jacquessmuts.ob1db.data.FilmContract
 import com.jacquessmuts.ob1db.models.Film
 import com.jacquessmuts.ob1db.network.NetworkClient
@@ -59,7 +60,8 @@ class SplashActivity : AppCompatActivity() {
             for ((i, film) in films.withIndex()){
                 filmValuesArr[i] = ContentValues()
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_FILM_ID, film.episodeId)
-                //filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_CHARACTERS, film.characters)
+                val charactersString: String = Utils.convertArrayToString(film.characters)
+                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_CHARACTERS, charactersString)
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_CREATED, film.created)
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_DIRECTOR, film.director)
                 filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_EDITED, film.edited)

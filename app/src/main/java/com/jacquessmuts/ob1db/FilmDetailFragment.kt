@@ -13,8 +13,16 @@ import com.jacquessmuts.ob1db.activities.FilmListActivity
 import com.jacquessmuts.ob1db.data.FilmContract
 import com.jacquessmuts.ob1db.data.FilmDbHelper
 import com.jacquessmuts.ob1db.models.Film
+import icepick.Icepick
+import icepick.State
 import kotlinx.android.synthetic.main.activity_film_detail.*
 import kotlinx.android.synthetic.main.film_detail.*
+import android.provider.MediaStore.Video
+import android.text.TextUtils
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
+
 
 /**
  * A fragment representing a single Film detail screen.
@@ -28,6 +36,7 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
      * The dummy content this fragment is presenting.
      */
     private var mFilm: Film? = null
+    @State
     private var mFilmId: Long = 0
 
     companion object {
@@ -62,7 +71,17 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
 
     fun showFilmDetails(){
         activity?.toolbar_layout?.title = mFilm?.title
-        film_detail.text = mFilm?.openingCrawl;
+        text_film_title.text = mFilm?.title
+        text_date.text = mFilm?.releaseDate
+        if (mFilm?.characters != null) {
+            var charactersString: String = "";
+            for (character in mFilm?.characters!!) {
+                charactersString = character + ", "
+            }
+            text_characters.text = charactersString.substring(0, charactersString.length-2)
+
+        }
+        text_opening_crawl.text = mFilm?.openingCrawl
     }
 
     /**
@@ -103,11 +122,20 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
             data.use {
                 while (it.moveToNext()) {
                     val film = Film()
-                    film.episodeId = it.getLong(it.getColumnIndex(FilmContract.FilmEntry.COLUMN_FILM_ID))
-                    film.title = it.getString(it.getColumnIndex(FilmContract.FilmEntry.COLUMN_TITLE))
-                    film.releaseDate = it.getString(it.getColumnIndex(FilmContract.FilmEntry.COLUMN_RELEASE_DATE))
-                    film.openingCrawl = it.getString(it.getColumnIndex(FilmContract.FilmEntry.COLUMN_OPENING_CRAWL))
-                    //film.characters = it.getString(it.getColumnIndex(FilmContract.FilmEntry.COLUMN_CHARACTERS))
+                    film.episodeId = it.getLong(
+                            it.getColumnIndex(FilmContract.FilmEntry.COLUMN_FILM_ID))
+                    film.title = it.getString(
+                            it.getColumnIndex(FilmContract.FilmEntry.COLUMN_TITLE))
+                    film.releaseDate = it.getString(
+                            it.getColumnIndex(FilmContract.FilmEntry.COLUMN_RELEASE_DATE))
+                    film.openingCrawl = it.getString(
+                            it.getColumnIndex(FilmContract.FilmEntry.COLUMN_OPENING_CRAWL))
+
+                    val characterStrings = it.getString(it.getColumnIndex(FilmContract.FilmEntry.COLUMN_CHARACTERS))
+                    if (!TextUtils.isEmpty(characterStrings)) {
+                        film.characters = Utils.convertStringToArray(characterStrings)
+                    }
+                            //it.getString(it.getColumnIndex(FilmContract.FilmEntry.COLUMN_CHARACTERS)))
                     if(film.episodeId!! > 0){
                         mFilm = film;
                     }

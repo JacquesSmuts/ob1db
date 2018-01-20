@@ -55,7 +55,7 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
          * This String will contain a simple SQL statement that will create a table that will
          * cache our weather data.
          */
-        val SQL_CREATE_WEATHER_TABLE =
+        val SQL_CREATE_FILMS_TABLE =
 
                 "CREATE TABLE " + FilmContract.FilmEntry.TABLE_NAME + " (" +
                         FilmContract.FilmEntry.COLUMN_FILM_ID + " INTEGER PRIMARY KEY NOT NULL ON CONFLICT REPLACE, " +
@@ -71,11 +71,11 @@ class FilmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                         FilmContract.FilmEntry.COLUMN_STARSHIPS + " TEXT, " +
                         FilmContract.FilmEntry.COLUMN_TITLE + " TEXT, " +
                         FilmContract.FilmEntry.COLUMN_URL + " TEXT, " +
-                        //                        FilmContract.FilmEntry.COLUMN_STARSHIPS   + " DOUBLE, "  +
+                        FilmContract.FilmEntry.COLUMN_STARSHIPS   + " TEXT, "  +
                         FilmContract.FilmEntry.COLUMN_VEHICLES + " TEXT);"
 
 
-        sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE)
+        sqLiteDatabase.execSQL(SQL_CREATE_FILMS_TABLE)
 
     }
 
