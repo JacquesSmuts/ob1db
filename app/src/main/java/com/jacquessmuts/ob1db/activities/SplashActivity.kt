@@ -27,6 +27,8 @@ class SplashActivity : AppCompatActivity() {
 
         //TODO: check internet, then database content, then open the list if you have data
         this.GetJsonWithOkHttpClient().execute()
+
+        //TODO: if api call takes longer than 1500ms, show a progress loader
     }
 
     fun navigateToNextActivity(){

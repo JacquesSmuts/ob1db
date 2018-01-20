@@ -2,12 +2,11 @@
 <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/film_list"
+    android:id="@+id/recycler_film_list"
     android:name="com.jacquessmuts.ob1db.FilmListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:background="@color/off_white"
     app:layoutManager="LinearLayoutManager"
     tools:context="com.jacquessmuts.ob1db.activities.FilmListActivity"
-    tools:listitem="@layout/film_list_content" />
+    tools:listitem="@layout/film_list_item" />

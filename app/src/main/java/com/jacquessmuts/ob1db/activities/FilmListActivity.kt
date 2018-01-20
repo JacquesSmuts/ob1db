@@ -5,10 +5,10 @@ import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.design.widget.Snackbar
 import android.support.v4.app.LoaderManager
 import android.support.v4.content.CursorLoader
 import android.support.v4.content.Loader
+import android.support.v7.widget.LinearLayoutManager
 import com.jacquessmuts.ob1db.R
 import com.jacquessmuts.ob1db.adapters.FilmListRecyclerViewAdapter
 import com.jacquessmuts.ob1db.data.FilmContract
@@ -67,11 +67,6 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
         setSupportActionBar(toolbar)
         toolbar.title = title
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }
-
         if (film_detail_container != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
@@ -80,14 +75,16 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
             mTwoPane = true
         }
 
+        recycler_film_list.layoutManager = LinearLayoutManager(this);
         supportLoaderManager.initLoader(ID_FILM_LIST_LOADER, null, this)
+
     }
 
     /**
      * Called whenever data has finished refreshing or updating
      */
-    private fun setupRecyclerView() {
-        film_list.adapter = FilmListRecyclerViewAdapter(this, films, mTwoPane)
+    private fun setupRecyclerAdapter() {
+        recycler_film_list.adapter = FilmListRecyclerViewAdapter(this, films, mTwoPane)
     }
 
     /**
@@ -138,7 +135,7 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
                 }
             }
 
-            setupRecyclerView()
+            setupRecyclerAdapter()
         }
     }
 

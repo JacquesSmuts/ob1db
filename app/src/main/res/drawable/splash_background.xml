@@ -6,7 +6,7 @@
     <item>
         <bitmap
             android:gravity="center"
-        android:src="@drawable/logo_star_wars" />
+        android:src="@drawable/star_wars_logo" />
     </item>
 </layer-list>
 

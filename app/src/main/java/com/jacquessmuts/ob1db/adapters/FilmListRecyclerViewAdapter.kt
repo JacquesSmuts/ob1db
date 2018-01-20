@@ -13,7 +13,7 @@ import com.jacquessmuts.ob1db.activities.FilmDetailActivity
 import com.jacquessmuts.ob1db.activities.FilmListActivity
 import com.jacquessmuts.ob1db.dummy.DummyContent
 import com.jacquessmuts.ob1db.models.Film
-import kotlinx.android.synthetic.main.film_list_content.view.*
+import kotlinx.android.synthetic.main.film_list_item.view.*
 
 /**
  * Created by Jacques Smuts on 1/19/2018.
@@ -27,11 +27,11 @@ class FilmListRecyclerViewAdapter(private val mParentActivity: FilmListActivity,
 
     init {
         mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as DummyContent.DummyItem
+            val item = v.tag as Film
             if (mTwoPane) {
                 val fragment = FilmDetailFragment().apply {
                     arguments = Bundle().apply {
-                        putString(FilmDetailFragment.ARG_ITEM_ID, item.id)
+                        //putString(FilmDetailFragment.ARG_ITEM_ID, item.id)
                     }
                 }
                 mParentActivity.supportFragmentManager
@@ -40,7 +40,7 @@ class FilmListRecyclerViewAdapter(private val mParentActivity: FilmListActivity,
                         .commit()
             } else {
                 val intent = Intent(v.context, FilmDetailActivity::class.java).apply {
-                    putExtra(FilmDetailFragment.ARG_ITEM_ID, item.id)
+                    //putExtra(FilmDetailFragment.ARG_ITEM_ID, item.id)
                 }
                 v.context.startActivity(intent)
             }
@@ -49,14 +49,16 @@ class FilmListRecyclerViewAdapter(private val mParentActivity: FilmListActivity,
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.film_list_content, parent, false)
+                .inflate(R.layout.film_list_item, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = mValues[position]
-        holder.mIdView.text = item.title
-        holder.mContentView.text = item.director
+        holder.mTextTitle.text = item.title
+        holder.mTextDate.text = item.releaseDate
+        holder.mTextDirector.text = item.director
+        holder.mTextProducer.text = item.producer
 
         with(holder.itemView) {
             tag = item
@@ -69,7 +71,9 @@ class FilmListRecyclerViewAdapter(private val mParentActivity: FilmListActivity,
     }
 
     inner class ViewHolder(mView: View) : RecyclerView.ViewHolder(mView) {
-        val mIdView: TextView = mView.id_text
-        val mContentView: TextView = mView.content
+        val mTextTitle : TextView = mView.text_title
+        val mTextDate : TextView = mView.text_date
+        val mTextDirector : TextView = mView.text_director
+        val mTextProducer : TextView = mView.text_producer
     }
 }
