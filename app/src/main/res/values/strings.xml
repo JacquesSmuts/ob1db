@@ -5,5 +5,11 @@
     <string name="content_authority">com.jacquessmuts.starwarsdb</string>
     <string name="label_director">Director</string>
     <string name="label_producer">Producer</string>
+
+    <string name="error_title">Oh no!</string>
+    <string name="error_api">Our messages to Alderaan are not getting through! I hope everything is all right…</string>
+    <string name="error_api_with_data">Our messages to Alderaan are not getting through! At least we still have some local records for offline use</string>
+    <string name="ok_button">Roger Roger</string>
+
     <string name="content_description_image_poster">The Poster of this movie</string>
 </resources>

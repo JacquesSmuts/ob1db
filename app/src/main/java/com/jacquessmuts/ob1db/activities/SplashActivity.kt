@@ -1,7 +1,6 @@
 package com.jacquessmuts.ob1db.activities
 
 import android.content.ContentValues
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
@@ -14,14 +13,20 @@ import com.jacquessmuts.ob1db.R
 import com.jacquessmuts.ob1db.Utils
 import com.jacquessmuts.ob1db.data.FilmContract
 import com.jacquessmuts.ob1db.data.PeopleContract
-import com.jacquessmuts.ob1db.models.Person
 import com.jacquessmuts.ob1db.models.Film
+import com.jacquessmuts.ob1db.models.Person
 import com.jacquessmuts.ob1db.network.NetworkClient
 import kotlinx.android.synthetic.main.activity_splash.*
+import okhttp3.*
 import org.json.JSONObject
-import java.io.BufferedInputStream
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import java.io.IOException
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.DialogAction
+
+
+
+
+
 
 /**
  * Created by Jacques Smuts on 1/18/2018.
@@ -30,8 +35,9 @@ import java.io.InputStreamReader
 class SplashActivity : AppCompatActivity() {
 
     private var mIsCurrentlyOpen = false //Determines whether the activity is running
-    var mNextUrl = ""
-    val TAG = "SplashActivity"
+    private val okHttpClient = OkHttpClient()
+    private var mNextUrl = ""
+    private val TAG = "splashActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,17 +47,13 @@ class SplashActivity : AppCompatActivity() {
         if (!Utils.isNetworkConnected(this)) {
             //There's no internet. Check if data has been saved before
             //TODO also need to check if tables exist, in case user erases data manually and opens app, but this is a super fringe event
-            if (Utils.hasEverSavedData(this)){
-                navigateToNextAfterDelay()
-            } else {
-                //showApologyPopup()
-                finish()
-            }
+            handleApiFailure()
+            return
         }
 
         //Only download data if it has been more than a day since last call
         if (Utils.hasBeenMoreThanADaySinceLastDataCall(this)) {
-            this.GetFilmsWithAsyncTask().execute()
+            this.getFilmsWithOkHttp()
         } else {
             navigateToNextAfterDelay()
         }
@@ -60,7 +62,7 @@ class SplashActivity : AppCompatActivity() {
         Handler().postDelayed({
             if (mIsCurrentlyOpen){
                 progress_bar.visibility = View.VISIBLE
-                progress_bar.animate().scaleY(5.0f).scaleX(5.0f).setDuration(12000)
+                progress_bar.animate().scaleY(5.0f).scaleX(5.0f).duration = 12000
             } else {
                 finish() //because the user closed the app before things finished
             }
@@ -74,15 +76,43 @@ class SplashActivity : AppCompatActivity() {
 
     //Loop through all the pages to get the characters. If there are too many characters,
     //just get them individually as needed and save then. For now, the list is short and this works
-    fun getNextPage(){
+    private fun getNextPage(){
         Log.d(TAG, "Getting next page")
-        if (TextUtils.isEmpty(mNextUrl) || mNextUrl.equals("null")){
+        if (TextUtils.isEmpty(mNextUrl) || mNextUrl == "null"){
             Utils.setDataSavedTime(this)
             navigateToNextActivity()
         } else {
-            GetPeopleWithAsyncTask(mNextUrl).execute()
+            getPeopleWithOkHttp(mNextUrl)
         }
     }
+
+    private fun handleApiFailure(){
+        if (Utils.hasEverSavedData(this)){
+            showApologyPopup(getString(R.string.error_api_with_data))
+        } else {
+            showApologyPopup(getString(R.string.error_api))
+        }
+    }
+
+    private fun showApologyPopup(bodyText : String){
+        MaterialDialog.Builder(this)
+                .title(R.string.error_title)
+                .content(bodyText)
+                .positiveText(R.string.ok_button)
+                .onAny(PopupCallback())
+                .show()
+    }
+
+    private inner class PopupCallback : MaterialDialog.SingleButtonCallback {
+        override fun onClick(dialog: MaterialDialog, which: DialogAction) {
+            if (Utils.hasEverSavedData(this@SplashActivity)){
+                navigateToNextActivity()
+            } else {
+                finish()
+            }
+        }
+    }
+
 
     private fun navigateToNextAfterDelay(){
         Handler().postDelayed({
@@ -102,118 +132,125 @@ class SplashActivity : AppCompatActivity() {
         finish()
     }
 
-//    private fun getFilmsWithOkHttp(){
-//        val client = OkHttpClient()
-//        val request = Request.Builder().url(NetworkClient.GET_ALL_FILMS).build()
-//        val Response = client.newCall(request).execute()
-//
-//        return response.body().string();
-//
-//    }
+    private fun getFilmsWithOkHttp(){
+        val request = Request.Builder()
+                .url(NetworkClient.GET_ALL_FILMS)
+                .build()
 
-
-    //TODO: use OkHttp. I mean really. Gosh gee willikers.
-    inner class GetFilmsWithAsyncTask() : AsyncTask<Unit, Unit, String>() {
-
-        override fun doInBackground(vararg params: Unit?): String? {
-            val networkClient = NetworkClient()
-            val stream = BufferedInputStream(
-                    networkClient.get(NetworkClient.GET_ALL_FILMS))
-            return readStream(stream)
-        }
-
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-
-            //TODO: if (TextUtils.isEmpty(result)){}
-
-            val jsonObject = JSONObject(result)
-            val resultsArray = jsonObject.getString("results")
-            val filmsType = object : TypeToken<List<Film>>() {}.type
-            val films = Gson().fromJson<List<Film>>(resultsArray, filmsType)
-
-            val filmValuesArr = arrayOfNulls<ContentValues>(films.size)
-            for ((i, film) in films.withIndex()){
-                filmValuesArr[i] = ContentValues()
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_FILM_ID, film.episodeId)
-                val charactersString: String = Utils.convertArrayToString(film.characters)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_CHARACTERS, charactersString)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_CREATED, film.created)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_DIRECTOR, film.director)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_EDITED, film.edited)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_OPENING_CRAWL, film.openingCrawl)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_PRODUCER, film.producer)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_RELEASE_DATE, film.releaseDate)
-//                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_STARSHIPS, film.starships)
-//                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_VEHICLES, film.vehicles)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_TITLE, film.title)
-                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_URL, film.url)
+        okHttpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                handleApiFailure()
             }
-            val contentResolver = contentResolver
-            contentResolver.bulkInsert(FilmContract.FilmEntry.CONTENT_URI, filmValuesArr)
 
-            //After getting the films, get the characters
-            this@SplashActivity.GetPeopleWithAsyncTask(mNextUrl).execute()
-        }
+            override fun onResponse(call: Call, response: Response) {
+                response.body().use({ responseBody ->
+                    if (!response.isSuccessful){
+                        handleApiFailure()
+                        return
+                    }
 
-        private fun readStream(inputStream: BufferedInputStream): String {
-            val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-            val stringBuilder = StringBuilder()
-            bufferedReader.forEachLine { stringBuilder.append(it) }
-            return stringBuilder.toString()
-        }
+                    handleFilmResults(responseBody?.string())
+                })
+            }
+        })
     }
 
-    inner class GetPeopleWithAsyncTask(url : String) : AsyncTask<Unit, Unit, String>() {
+    /**
+     * [result] full server response body
+     */
+    private fun handleFilmResults(result: String?){
 
-        private val streamUrl = url
-
-        override fun doInBackground(vararg params: Unit?): String? {
-            val networkClient = NetworkClient()
-            var url = NetworkClient.GET_ALL_CHARACTERS
-            if (!TextUtils.isEmpty(streamUrl)){
-                url = streamUrl
-            }
-            Log.d("SplashActivity", "Getting People:" + url)
-            val stream = BufferedInputStream(
-                    networkClient.get(url))
-            return readStream(stream)
+        if (result == null){
+            handleApiFailure()
+            return
         }
 
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
+        val jsonObject = JSONObject(result)
+        val resultsArray = jsonObject.getString("results")
+        val filmsType = object : TypeToken<List<Film>>() {}.type
+        val films = Gson().fromJson<List<Film>>(resultsArray, filmsType)
 
-            //TODO: if (TextUtils.isEmpty(result)){}
+        val filmValuesArr = arrayOfNulls<ContentValues>(films.size)
+        for ((i, film) in films.withIndex()){
+            filmValuesArr[i] = ContentValues()
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_FILM_ID, film.episodeId)
+            val charactersString: String = Utils.convertArrayToString(film.characters)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_CHARACTERS, charactersString)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_CREATED, film.created)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_DIRECTOR, film.director)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_EDITED, film.edited)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_OPENING_CRAWL, film.openingCrawl)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_PRODUCER, film.producer)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_RELEASE_DATE, film.releaseDate)
+//                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_STARSHIPS, film.starships)
+//                filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_VEHICLES, film.vehicles)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_TITLE, film.title)
+            filmValuesArr[i]!!.put(FilmContract.FilmEntry.COLUMN_URL, film.url)
+        }
+        val contentResolver = contentResolver
+        contentResolver.bulkInsert(FilmContract.FilmEntry.CONTENT_URI, filmValuesArr)
 
-            val jsonObject = JSONObject(result)
+        //After getting the films, get the characters
+        getPeopleWithOkHttp(mNextUrl)
+    }
 
-            mNextUrl = ""
-            if (jsonObject.has("next")){
-                mNextUrl = jsonObject.getString("next")
+    private fun getPeopleWithOkHttp(url : String){
+        var streamUrl = NetworkClient.GET_ALL_CHARACTERS
+        if (!TextUtils.isEmpty(url)){
+            streamUrl = url
+        }
+        val request = Request.Builder()
+                .url(streamUrl)
+                .build()
+        Log.d("SplashActivity", "Getting People:" + streamUrl)
+
+        okHttpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                handleApiFailure()
             }
 
-            val resultsArray = jsonObject.getString("results")
-            val peopleType = object : TypeToken<List<Person>>() {}.type
-            val people = Gson().fromJson<List<Person>>(resultsArray, peopleType)
+            override fun onResponse(call: Call, response: Response) {
+                response.body().use({ responseBody ->
+                    if (!response.isSuccessful){
+                        handleApiFailure()
+                        return
+                    }
 
-            val peopleValuesArr = arrayOfNulls<ContentValues>(people.size)
-            for ((i, person) in people.withIndex()){
-                peopleValuesArr[i] = ContentValues()
-                peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_NAME, person.name)
-                peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_URL, person.url)
-                peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_HEIGHT, person.height)
+                    handlePeopleResults(responseBody?.string())
+                })
             }
-            val contentResolver = contentResolver
-            contentResolver.bulkInsert(PeopleContract.PersonEntry.CONTENT_URI, peopleValuesArr)
+        })
+    }
 
-            getNextPage()
+    private fun handlePeopleResults(result : String?){
+        if (result == null){
+            handleApiFailure()
+            return
         }
 
-        private fun readStream(inputStream: BufferedInputStream): String {
-            val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-            val stringBuilder = StringBuilder()
-            bufferedReader.forEachLine { stringBuilder.append(it) }
-            return stringBuilder.toString()
+        val jsonObject = JSONObject(result)
+
+        mNextUrl = ""
+        if (jsonObject.has("next")){
+            mNextUrl = jsonObject.getString("next")
         }
+
+        val resultsArray = jsonObject.getString("results")
+        val peopleType = object : TypeToken<List<Person>>() {}.type
+        val people = Gson().fromJson<List<Person>>(resultsArray, peopleType)
+
+        val peopleValuesArr = arrayOfNulls<ContentValues>(people.size)
+        for ((i, person) in people.withIndex()){
+            peopleValuesArr[i] = ContentValues()
+            peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_NAME, person.name)
+            peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_URL, person.url)
+            peopleValuesArr[i]!!.put(PeopleContract.PersonEntry.COLUMN_HEIGHT, person.height)
+        }
+        val contentResolver = contentResolver
+        contentResolver.bulkInsert(PeopleContract.PersonEntry.CONTENT_URI, peopleValuesArr)
+
+        getNextPage()
     }
 }

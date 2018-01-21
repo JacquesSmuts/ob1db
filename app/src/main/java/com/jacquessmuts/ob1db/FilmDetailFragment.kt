@@ -54,7 +54,7 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
                 mFilmId = it.getLong(EXTRA_FILM_ID)
             }
         }
-        activity.supportLoaderManager.initLoader(FilmListActivity.ID_FILM_LIST_LOADER, null, this)
+        activity!!.supportLoaderManager.initLoader(FilmListActivity.ID_FILM_LIST_LOADER, null, this)
 
     }
 
@@ -91,7 +91,7 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
                 val selection = FilmContract.FilmEntry.getById(mFilmId)
 
                 return CursorLoader(
-                        this@FilmDetailFragment.context,
+                        this@FilmDetailFragment.context!!,
                         queryUri,
                         DbHelper.FILM_DETAILS_PROJECTION,
                         selection,
@@ -106,7 +106,7 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
                 val selection = PeopleContract.PersonEntry.getAll
 
                 return CursorLoader(
-                        this@FilmDetailFragment.context,
+                        this@FilmDetailFragment.context!!,
                         queryUri,
                         DbHelper.PEOPLE_PROJECTION,
                         selection,
@@ -154,7 +154,7 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
                     }
                 }
 
-                activity.supportLoaderManager.initLoader(FilmListActivity.ID_PEOPLE_LIST_LOADER, null, this)
+                activity!!.supportLoaderManager.initLoader(FilmListActivity.ID_PEOPLE_LIST_LOADER, null, this)
                 showFilmDetails();
             }
             FilmListActivity.ID_PEOPLE_LIST_LOADER -> {

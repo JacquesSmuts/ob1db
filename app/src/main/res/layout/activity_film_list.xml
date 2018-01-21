@@ -7,6 +7,7 @@
     android:fitsSystemWindows="true"
     tools:context="com.jacquessmuts.ob1db.activities.FilmListActivity">
 
+    <!-- There's no real point to have a toolbar here, so it's removed for now -->
     <!--<android.support.design.widget.AppBarLayout-->
         <!--android:id="@+id/app_bar"-->
         <!--android:layout_width="match_parent"-->
