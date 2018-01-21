@@ -22,9 +22,10 @@ import org.json.JSONObject
 import java.io.IOException
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.DialogAction
-
-
-
+import com.jacquessmuts.ob1db.testing.SimpleIdlingResource
+import android.support.test.espresso.IdlingResource
+import android.support.annotation.NonNull
+import android.support.annotation.VisibleForTesting
 
 
 
@@ -38,8 +39,10 @@ class SplashActivity : AppCompatActivity() {
     private val okHttpClient = OkHttpClient()
     private var mNextUrl = ""
     private val TAG = "splashActivity"
+    private var mIdlingResource : SimpleIdlingResource? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (mIdlingResource != null) mIdlingResource!!.setIdleState(false) //testing must wait
         super.onCreate(savedInstanceState)
         mIsCurrentlyOpen = true
         setContentView(R.layout.activity_splash)
@@ -87,6 +90,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun handleApiFailure(){
+        if (mIdlingResource != null) mIdlingResource!!.setIdleState(true) //Testing can continue
         if (Utils.hasEverSavedData(this)){
             showApologyPopup(getString(R.string.error_api_with_data))
         } else {
@@ -113,7 +117,6 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
-
     private fun navigateToNextAfterDelay(){
         Handler().postDelayed({
             if (mIsCurrentlyOpen){
@@ -125,6 +128,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun navigateToNextActivity(){
+        if (mIdlingResource != null) mIdlingResource!!.setIdleState(true) //Testing can continue
         //If user closes splash screen, the app won't re-open
         if (mIsCurrentlyOpen) {
             startActivity(FilmListActivity.getIntent(this@SplashActivity))
@@ -252,5 +256,16 @@ class SplashActivity : AppCompatActivity() {
         contentResolver.bulkInsert(PeopleContract.PersonEntry.CONTENT_URI, peopleValuesArr)
 
         getNextPage()
+    }
+
+    /**
+     * Only called from test, creates and returns a new [SimpleIdlingResource].
+     */
+    @VisibleForTesting
+    fun getIdlingResource(): IdlingResource {
+        if (mIdlingResource == null) {
+            mIdlingResource = SimpleIdlingResource()
+        }
+        return mIdlingResource as SimpleIdlingResource
     }
 }
