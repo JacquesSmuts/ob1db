@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">ob1.db</string>
-    <string name="title_film_detail">Film Detail</string>
+    <string name="app_name">OB1.db</string>
+    <string name="title_film_list">FILMS</string>
+    <string name="title_film_detail">@string/title_film_list</string>
     <string name="content_authority">com.jacquessmuts.starwarsdb</string>
     <string name="label_director">Director</string>
     <string name="label_producer">Producer</string>

@@ -14,8 +14,7 @@ import com.jacquessmuts.ob1db.data.FilmContract
 import com.jacquessmuts.ob1db.data.DbHelper
 import com.jacquessmuts.ob1db.models.Film
 import icepick.State
-import kotlinx.android.synthetic.main.activity_film_detail.*
-import kotlinx.android.synthetic.main.film_detail.*
+import kotlinx.android.synthetic.main.fragment_film_detail.*
 import android.text.TextUtils
 import com.jacquessmuts.ob1db.data.PeopleContract
 import com.jacquessmuts.ob1db.models.Person
@@ -53,7 +52,6 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
                 // arguments. In a real-world scenario, use a Loader
                 // to load content from a content provider.
                 mFilmId = it.getLong(EXTRA_FILM_ID)
-                activity?.toolbar_layout?.title = mFilm?.title
             }
         }
         activity.supportLoaderManager.initLoader(FilmListActivity.ID_FILM_LIST_LOADER, null, this)
@@ -62,13 +60,12 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.film_detail, container, false)
+        val rootView = inflater.inflate(R.layout.fragment_film_detail, container, false)
 
         return rootView
     }
 
     fun showFilmDetails(){
-        activity?.toolbar_layout?.title = mFilm?.title
         text_film_title.text = mFilm?.title
         text_date.text = mFilm?.releaseDate
         if (mPeople.size > 0) {

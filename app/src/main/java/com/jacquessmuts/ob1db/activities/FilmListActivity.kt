@@ -54,9 +54,9 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_film_list)
-
-        setSupportActionBar(toolbar)
-        toolbar.title = title
+//
+//        setSupportActionBar(toolbar)
+//        toolbar.title = title
 
         if (film_detail_container != null) {
             // The detail container view will be present only in the

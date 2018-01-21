@@ -39,17 +39,22 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         if (!Utils.isNetworkConnected(this)) {
-            //There's no internet. Check the database?
-
-//            if (databaseHasBeenPopulated()){
-//                navigateToNextActivity()
-//            } else {
-//            showApologyPopup() //TODO popup
-//          }
-            finish()
+            //There's no internet. Check if data has been saved before
+            //TODO also need to check if tables exist, in case user erases data manually and opens app, but this is a super fringe event
+            if (Utils.hasEverSavedData(this)){
+                navigateToNextAfterDelay()
+            } else {
+                //showApologyPopup()
+                finish()
+            }
         }
 
-        this.GetFilmsWithAsyncTask().execute()
+        //Only download data if it has been more than a day since last call
+        if (Utils.hasBeenMoreThanADaySinceLastDataCall(this)) {
+            this.GetFilmsWithAsyncTask().execute()
+        } else {
+            navigateToNextAfterDelay()
+        }
 
         //show the progress bar if it takes long
         Handler().postDelayed({
@@ -72,11 +77,23 @@ class SplashActivity : AppCompatActivity() {
     fun getNextPage(){
         Log.d(TAG, "Getting next page")
         if (TextUtils.isEmpty(mNextUrl) || mNextUrl.equals("null")){
+            Utils.setDataSavedTime(this)
             navigateToNextActivity()
         } else {
             GetPeopleWithAsyncTask(mNextUrl).execute()
         }
     }
+
+    private fun navigateToNextAfterDelay(){
+        Handler().postDelayed({
+            if (mIsCurrentlyOpen){
+                navigateToNextActivity()
+            } else {
+                finish() //because the user closed the app before things finished
+            }
+        }, 1500)
+    }
+
     private fun navigateToNextActivity(){
         //If user closes splash screen, the app won't re-open
         if (mIsCurrentlyOpen) {
