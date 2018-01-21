@@ -1,7 +1,6 @@
 package com.jacquessmuts.ob1db
 
 import android.content.Context
-import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
 import java.util.*
 
