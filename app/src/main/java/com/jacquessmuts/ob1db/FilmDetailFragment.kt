@@ -48,9 +48,6 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
 
         arguments?.let {
             if (it.containsKey(EXTRA_FILM_ID)) {
-                // Load the dummy content specified by the fragment
-                // arguments. In a real-world scenario, use a Loader
-                // to load content from a content provider.
                 mFilmId = it.getLong(EXTRA_FILM_ID)
             }
         }
@@ -60,16 +57,15 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.fragment_film_detail, container, false)
 
-        return rootView
+        return inflater.inflate(R.layout.fragment_film_detail, container, false)
     }
 
-    fun showFilmDetails(){
+    private fun showFilmDetails(){
         text_film_title.text = mFilm?.title
         text_date.text = mFilm?.releaseDate
         if (mPeople.size > 0) {
-            var charactersString = "";
+            var charactersString = ""
             for (person in mPeople) {
                 charactersString = charactersString + person.name + ", "
             }

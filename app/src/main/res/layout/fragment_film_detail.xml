@@ -5,12 +5,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     android:orientation="vertical">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintHeight_default="wrap"
+        android:background="@color/space_black"
         tools:context="com.jacquessmuts.ob1db.FilmDetailFragment">
 
         <TextView
@@ -80,7 +82,7 @@
     <!--This is outside the ConstraintLayout, because ConstraintLayout has difficulties with
     rendering the correct height of textviews with dynamically growing content such as in
     the textview [@id/text_characters]-->
-    <TextView
+    <com.jacquessmuts.ob1db.SkewedTextView
         android:id="@+id/text_opening_crawl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -89,14 +91,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/divider_two"
         android:gravity="center"
-        android:background="@color/black"
         android:textColor="@color/colorAccent"
         android:textStyle="bold"
         android:textSize="20sp"
         android:justificationMode="inter_word"
         android:padding="12dp"
-        android:paddingTop="100dp"
-        android:paddingBottom="500dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="160dp"
         tools:text="It was a time of civil war and lots of trade taxation discussions with oh my word how did this happen"/>
 
 </LinearLayout>
