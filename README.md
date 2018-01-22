@@ -27,6 +27,8 @@ This testing strategy can ensure that there is always data and there are no cras
 
 Things like UI, UX and readability are best testing using a hallway test with a technologically illiterate friend or relative.
 
+Finally, the specifications drawn up as part of the agreement with the client needs to be manually tested against the specifications before delivery, preferably by someone who was part of the client negotiations, and finally side-by-side with the client to ensure contractual delivery.
+
 2. Interruption Test Cases
 
 The previously mentioned Espresso test can be expanded upon with a simple test to add screen rotation using the method described [here](https://stackoverflow.com/questions/37362200/how-to-rotate-activity-i-mean-screen-orientation-change-using-espresso). Screen orientation is used because it follows a very similar Activity Lifecycle to interruption, except that the available memory for the savedInstanceState Bundle decreases over time for any background Activity, which is why I don't save objects in the savedInstanceState, but only ID's, so the database Loader can obtain the item after Activity Restart.
