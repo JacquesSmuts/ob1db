@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v4.app.LoaderManager
 import android.support.v4.content.CursorLoader
 import android.support.v4.content.Loader
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import com.jacquessmuts.ob1db.R
 import com.jacquessmuts.ob1db.adapters.FilmListRecyclerViewAdapter
 import com.jacquessmuts.ob1db.data.FilmContract
@@ -34,7 +36,10 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
      * device.
      */
     private var mTwoPane: Boolean = false
+    private val TAG = "filmlistactivity"
     private var films: MutableList<Film> = mutableListOf()
+    private val EXTRA_SCROLL_POSITION = "extra_scroll_position"
+    private var mScrolledPosition = 0;
 
     companion object {
         const val ID_FILM_LIST_LOADER = 94 //we are located at docking bay 94
@@ -52,22 +57,29 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.i(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_film_list)
-//
-//        setSupportActionBar(toolbar)
-//        toolbar.title = title
 
         if (film_detail_container != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-w900dp).
-            // If this view is present, then the
-            // activity should be in two-pane mode.
+            // The detail container view will be present only in the large-screen layouts (res/values-w900dp).
             mTwoPane = true
         }
 
+        if (savedInstanceState != null){
+            mScrolledPosition = savedInstanceState.getInt(EXTRA_SCROLL_POSITION, 0)
+        }
+
         recycler_film_list.layoutManager = LinearLayoutManager(this)
-        supportLoaderManager.initLoader(ID_FILM_LIST_LOADER, null, this)
+
+        supportLoaderManager.restartLoader(ID_FILM_LIST_LOADER, null, this)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
+        Log.i(TAG, "onSaveInstanceState")
+        super.onSaveInstanceState(outState, outPersistentState)
+        var layoutManager : LinearLayoutManager = recycler_film_list.layoutManager as LinearLayoutManager
+        outState?.putInt(EXTRA_SCROLL_POSITION, layoutManager.findFirstCompletelyVisibleItemPosition());
     }
 
     /**
@@ -75,12 +87,17 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
      */
     private fun setupRecyclerAdapter() {
         recycler_film_list.adapter = FilmListRecyclerViewAdapter(this, films, mTwoPane)
+        if (mScrolledPosition > 0){
+            recycler_film_list.scrollToPosition(mScrolledPosition)
+            mScrolledPosition = 0
+        }
     }
 
     /**
      * DB INTERFACE FUNCTIONS
      */
     override fun onCreateLoader(loaderId: Int, args: Bundle?): Loader<Cursor>? {
+        Log.i(TAG, "onCreateLoader")
         when (loaderId) {
 
              ID_FILM_LIST_LOADER -> {
@@ -103,6 +120,7 @@ class FilmListActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curs
     }
 
     override fun onLoadFinished(loader: Loader<Cursor>?, data: Cursor?) {
+        Log.i(TAG, "onLoadFinished")
         if (data != null) {
             /**
              *  Iterate over the entire database and load the [Film] list as objects in memory
