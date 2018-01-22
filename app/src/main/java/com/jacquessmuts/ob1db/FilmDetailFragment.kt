@@ -51,7 +51,7 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
                 mFilmId = it.getLong(EXTRA_FILM_ID)
             }
         }
-        activity!!.supportLoaderManager.initLoader(FilmListActivity.ID_FILM_LIST_LOADER, null, this)
+        activity!!.supportLoaderManager.restartLoader(FilmListActivity.ID_FILM_LIST_LOADER, null, this)
 
     }
 
@@ -150,7 +150,7 @@ class FilmDetailFragment : Fragment() , LoaderManager.LoaderCallbacks<Cursor>{
                     }
                 }
 
-                activity!!.supportLoaderManager.initLoader(FilmListActivity.ID_PEOPLE_LIST_LOADER, null, this)
+                activity!!.supportLoaderManager.restartLoader(FilmListActivity.ID_PEOPLE_LIST_LOADER, null, this)
                 showFilmDetails();
             }
             FilmListActivity.ID_PEOPLE_LIST_LOADER -> {
