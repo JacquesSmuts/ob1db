@@ -33,7 +33,7 @@ Finally, the specifications drawn up as part of the agreement with the client ne
 
 The previously mentioned Espresso test can be expanded upon with a simple test to add screen rotation using the method described [here](https://stackoverflow.com/questions/37362200/how-to-rotate-activity-i-mean-screen-orientation-change-using-espresso). Screen orientation is used because it follows a very similar Activity Lifecycle to interruption, except that the available memory for the savedInstanceState Bundle decreases over time for any background Activity, which is why I don't save objects in the savedInstanceState, but only ID's, so the database Loader can obtain the item after Activity Restart.
 
-Handling navigating away is a bit more difficult and likely requires the [UI Automator](https://developer.android.com/training/testing/ui-testing/uiautomator-testing.html) which I have no experienc with.
+Handling navigating away is a bit more difficult and likely requires the [UI Automator](https://developer.android.com/training/testing/ui-testing/uiautomator-testing.html) which I have no experience with.
 
 The quickest way to handle that is to have a simple "Navigate away from every screen" manual testing procedure before each deployment, but this becomes exponentially impractical as the number of screens increases.
 
@@ -41,6 +41,8 @@ The quickest way to handle that is to have a simple "Navigate away from every sc
 
 As per previous answer, logging can be expanded upon and logs recorded using an analytics API such as Firebase to determine the average length of any process. This method will also allow you to see which circumstances (user location, connectivity, hardware, os) compromises the app's performance the most.
 
+Ideally, there should also be a Fuzzer to provide bad data to see if the app can handle server issues as well.
+
 4. UI Testing
 
-Aside from answers already given above to test screen orientation, things like font options need to be tested manually for each new TextView or EditText within the app.
+Aside from answers already given above to test screen orientation, things like font options need to be tested manually for each new TextView or EditText within the app. If one follows Google's standards, plan your ConstraintLayout well, and use "sp" as the font size in your TextView, there should be minimal problems. A QA department would have a device or emulator set up for each unusual configuration and all apps need to survive a run through these configurations.
